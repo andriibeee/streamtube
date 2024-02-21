@@ -3,7 +3,6 @@ package queue
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -61,7 +60,7 @@ func (endpoints *QueueEndpoints) playlist(w http.ResponseWriter, r *http.Request
 func (endpoints *QueueEndpoints) stream(w http.ResponseWriter, r *http.Request) {
 	conn, _, _, err := ws.UpgradeHTTP(r, w)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

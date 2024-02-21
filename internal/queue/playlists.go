@@ -2,7 +2,6 @@ package queue
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 )
 
@@ -46,8 +45,6 @@ func (hub *PlaylistHub) AddVideo(username string, video Video) error {
 
 	hub.playlists[username] = append(playlist, video)
 
-	fmt.Println(username)
-	fmt.Println(hub.playlists[username])
 	return nil
 }
 
