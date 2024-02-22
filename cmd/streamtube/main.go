@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -9,6 +11,7 @@ import (
 	"streamtube/app/internal/queue"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/gorilla/securecookie"
@@ -65,9 +68,30 @@ func main() {
 	qendp := queue.NewQueueEndpoints(&pl, &qe, &es, s)
 	ae := auth.NewAuthEndpoints(s, oauth2Config)
 
-	r := chi.NewRouter()
-	r.Mount("/playlist", qendp.GetRouter())
-	r.Mount("/auth", ae.GetRouter())
+	go (func() {
+		r := chi.NewRouter()
+		r.Mount("/playlist", qendp.GetRouter())
+		r.Mount("/auth", ae.GetRouter())
 
-	http.ListenAndServe(":"+port, r)
+		serv := &http.Server{
+			Addr:         "0.0.0.0:" + port,
+			WriteTimeout: time.Second * 15,
+			ReadTimeout:  time.Second * 15,
+			IdleTimeout:  time.Second * 15,
+			Handler:      r,
+		}
+
+		go func() {
+			err := serv.ListenAndServe()
+			if err != nil {
+				log.Println(err)
+			}
+		}()
+
+		<-c
+
+		panic(serv.Shutdown(context.TODO()))
+	})()
+
+	<-c
 }
